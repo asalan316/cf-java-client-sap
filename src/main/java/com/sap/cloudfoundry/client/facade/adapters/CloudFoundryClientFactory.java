@@ -147,7 +147,8 @@ public abstract class CloudFoundryClientFactory {
 
     private ConnectionContext createConnectionContext(String controllerApiHost) {
         DefaultConnectionContext.Builder builder = DefaultConnectionContext.builder()
-                                                                           .apiHost(controllerApiHost);
+                .skipSslValidation(true)
+                .apiHost(controllerApiHost);
         getSslHandshakeTimeout().ifPresent(builder::sslHandshakeTimeout);
         getConnectTimeout().ifPresent(builder::connectTimeout);
         getConnectionPoolSize().ifPresent(builder::connectionPoolSize);
@@ -162,6 +163,7 @@ public abstract class CloudFoundryClientFactory {
             clientWithOptions = clientWithOptions.responseTimeout(getResponseTimeout().get());
         }
         clientWithOptions = clientWithOptions.metrics(true, Function.identity());
+        clientWithOptions = clientWithOptions.noSSL();
         return clientWithOptions;
     }
 
