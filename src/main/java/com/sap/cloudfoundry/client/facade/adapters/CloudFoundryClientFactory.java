@@ -122,6 +122,7 @@ public abstract class CloudFoundryClientFactory {
             LOGGER.warn(MessageFormat.format(Messages.CALL_TO_0_FAILED_WITH_1, controllerUrl.toString(), e.getMessage()), e);
             v3Api = controllerUrl + "/v3";
         }
+        LOGGER.info("custom-test: calling createV3SpacesClient");
         var spacesV3 = createV3SpacesClient(controllerUrl, v3Api, oAuthClient, requestTags);
         var orgsV3 = createV3OrgsClient(controllerUrl, v3Api, oAuthClient, requestTags);
         return new CloudSpaceClient(spacesV3, orgsV3);
@@ -142,19 +143,27 @@ public abstract class CloudFoundryClientFactory {
     }
 
     public ConnectionContext getOrCreateConnectionContext(String controllerApiHost) {
+        LOGGER.info("custom-test: calling createConnectionContext");
+        LOGGER.info("custom-test: checking connectionContextCache" + connectionContextCache);
         return connectionContextCache.computeIfAbsent(controllerApiHost, this::createConnectionContext);
     }
 
     private ConnectionContext createConnectionContext(String controllerApiHost) {
+        LOGGER.info("custom-test: inside createConnectionContext");
         DefaultConnectionContext.Builder builder = DefaultConnectionContext.builder()
                 .skipSslValidation(true)
                 .apiHost(controllerApiHost);
+        LOGGER.info("custom-test: connection skipSslValidation");
         getSslHandshakeTimeout().ifPresent(builder::sslHandshakeTimeout);
         getConnectTimeout().ifPresent(builder::connectTimeout);
         getConnectionPoolSize().ifPresent(builder::connectionPoolSize);
         getThreadPoolSize().ifPresent(builder::threadPoolSize);
+        LOGGER.info("custom-test: connection before getAdditionalHttpClientConfiguration");
         builder.additionalHttpClientConfiguration(this::getAdditionalHttpClientConfiguration);
-        return builder.build();
+        LOGGER.info("custom-test: connection after getAdditionalHttpClientConfiguration");
+        DefaultConnectionContext build = builder.build();
+        LOGGER.info("custom-test: created connection context" + build);
+        return build;
     }
 
     private reactor.netty.http.client.HttpClient getAdditionalHttpClientConfiguration(reactor.netty.http.client.HttpClient client) {
@@ -163,7 +172,10 @@ public abstract class CloudFoundryClientFactory {
             clientWithOptions = clientWithOptions.responseTimeout(getResponseTimeout().get());
         }
         clientWithOptions = clientWithOptions.metrics(true, Function.identity());
+        LOGGER.info("custom-test: before getAdditionalHttpClientConfiguration");
         clientWithOptions = clientWithOptions.noSSL();
+        LOGGER.info("custom-test: after getAdditionalHttpClientConfiguration");
+
         return clientWithOptions;
     }
 
