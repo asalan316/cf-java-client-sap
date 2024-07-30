@@ -6,6 +6,8 @@ import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.time.Duration;
 import java.util.Map;
@@ -36,6 +38,10 @@ import com.sap.cloudfoundry.client.facade.util.CloudUtil;
 import com.sap.cloudfoundry.client.facade.util.JsonUtil;
 
 import reactor.core.publisher.Mono;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 
 @Value.Immutable
 public abstract class CloudFoundryClientFactory {
@@ -145,13 +151,15 @@ public abstract class CloudFoundryClientFactory {
     public ConnectionContext getOrCreateConnectionContext(String controllerApiHost) {
         LOGGER.info("custom-test: calling createConnectionContext");
         LOGGER.info("custom-test: checking connectionContextCache" + connectionContextCache);
-        return connectionContextCache.computeIfAbsent(controllerApiHost, this::createConnectionContext);
+        return createConnectionContext(controllerApiHost); // create connection context everytime
+        //return connectionContextCache.computeIfAbsent(controllerApiHost, this::createConnectionContext);
     }
 
     private ConnectionContext createConnectionContext(String controllerApiHost) {
         LOGGER.info("custom-test: inside createConnectionContext");
         DefaultConnectionContext.Builder builder = DefaultConnectionContext.builder()
                 .skipSslValidation(true)
+
                 .apiHost(controllerApiHost);
         LOGGER.info("custom-test: connection skipSslValidation");
         getSslHandshakeTimeout().ifPresent(builder::sslHandshakeTimeout);
@@ -173,7 +181,9 @@ public abstract class CloudFoundryClientFactory {
         }
         clientWithOptions = clientWithOptions.metrics(true, Function.identity());
         LOGGER.info("custom-test: before getAdditionalHttpClientConfiguration");
+        // TODO: just commect the next line
         clientWithOptions = clientWithOptions.noSSL();
+        FascadeSSLUtil.disableSSLValidation();
         LOGGER.info("custom-test: after getAdditionalHttpClientConfiguration");
 
         return clientWithOptions;
