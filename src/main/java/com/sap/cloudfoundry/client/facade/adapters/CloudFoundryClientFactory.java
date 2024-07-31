@@ -159,7 +159,6 @@ public abstract class CloudFoundryClientFactory {
         LOGGER.info("custom-test: inside createConnectionContext");
         DefaultConnectionContext.Builder builder = DefaultConnectionContext.builder()
                 .skipSslValidation(true)
-
                 .apiHost(controllerApiHost);
         LOGGER.info("custom-test: connection skipSslValidation");
         getSslHandshakeTimeout().ifPresent(builder::sslHandshakeTimeout);
@@ -182,8 +181,9 @@ public abstract class CloudFoundryClientFactory {
         clientWithOptions = clientWithOptions.metrics(true, Function.identity());
         LOGGER.info("custom-test: before getAdditionalHttpClientConfiguration");
         // TODO: just commect the next line
-        clientWithOptions = clientWithOptions.noSSL();
-        FascadeSSLUtil.disableSSLValidation();
+        //clientWithOptions = clientWithOptions.noSSL();
+        clientWithOptions.secure( ssl -> FascadeSSLUtil.disableSSLValidation());
+        //FascadeSSLUtil.disableSSLValidation();
         LOGGER.info("custom-test: after getAdditionalHttpClientConfiguration");
 
         return clientWithOptions;

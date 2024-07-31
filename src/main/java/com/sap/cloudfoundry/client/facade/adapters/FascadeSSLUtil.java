@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import java.net.Socket;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 import javax.net.ssl.*;
@@ -18,37 +17,51 @@ public class FascadeSSLUtil {
     private FascadeSSLUtil() {
     }
 
-    private static final X509TrustManager NULL_TRUST_MANAGER = new X509TrustManager(){
-
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] xcs, String string) {
-            // NOSONAR
-        }
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] xcs, String string) {
-            LOGGER.info("==checking checkServerTrusted with X509Certificate");
-        }
-
+    private static final X509TrustManager NULL_TRUST_MANAGER = new X509ExtendedTrustManager() {
         @Override
         public X509Certificate[] getAcceptedIssuers() {
-            return null;
+            LOGGER.info("custom==starting from getAcceptedIssuers");
+            return new X509Certificate[]{};
         }
 
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType) {
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType) {
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket) {
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket) {
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {
+        }
     };
 
-    public static void disableSSLValidation() {
+    public static SSLContext disableSSLValidation() {
         LOGGER.info("==starting from disableSSLValidation");
+        SSLContext sslContext;
         try {
-            SSLContext context = SSLContext.getInstance("TLS");
-            context.init(null, new TrustManager[] { NULL_TRUST_MANAGER }, null);
-            SSLContext.setDefault(context);
-            HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
+            sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, new TrustManager[] { NULL_TRUST_MANAGER }, null);
+            SSLContext.setDefault(sslContext);
+           // HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
         } catch (KeyManagementException | NoSuchAlgorithmException e) {
             throw new IllegalStateException(e);
         }
         LOGGER.info("==returning from disableSSLValidation");
+        return sslContext;
     }
 
     public static SSLContext disableSSLCertValidation() {
