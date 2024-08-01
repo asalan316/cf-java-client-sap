@@ -17,7 +17,7 @@ public class FascadeSSLUtil {
     private FascadeSSLUtil() {
     }
 
-    private static final X509TrustManager NULL_TRUST_MANAGER = new X509ExtendedTrustManager() {
+    public static final X509TrustManager NULL_TRUST_MANAGER = new X509ExtendedTrustManager() {
         @Override
         public X509Certificate[] getAcceptedIssuers() {
             LOGGER.info("custom==starting from getAcceptedIssuers");

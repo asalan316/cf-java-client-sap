@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
 
+import io.netty.handler.ssl.SslContextBuilder;
 import org.cloudfoundry.client.CloudFoundryClient;
 import org.cloudfoundry.client.v3.organizations.OrganizationsV3;
 import org.cloudfoundry.client.v3.spaces.SpacesV3;
@@ -38,9 +39,11 @@ import com.sap.cloudfoundry.client.facade.util.CloudUtil;
 import com.sap.cloudfoundry.client.facade.util.JsonUtil;
 
 import reactor.core.publisher.Mono;
+import reactor.netty.tcp.SslProvider;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManager;
 
 @Value.Immutable
@@ -182,8 +185,14 @@ public abstract class CloudFoundryClientFactory {
         LOGGER.info("custom-test: before getAdditionalHttpClientConfiguration");
         // TODO: just commect the next line
         //clientWithOptions = clientWithOptions.noSSL();
-        clientWithOptions.secure( ssl -> FascadeSSLUtil.disableSSLValidation());
-        //FascadeSSLUtil.disableSSLValidation();
+        FascadeSSLUtil.disableSSLValidation();
+        clientWithOptions.secure( sslContextSpec -> {
+            try {
+                SslContextBuilder.forClient().trustManager(FascadeSSLUtil.NULL_TRUST_MANAGER).build();
+            } catch (SSLException e) {
+                throw new RuntimeException(e);
+            }
+        });
         LOGGER.info("custom-test: after getAdditionalHttpClientConfiguration");
 
         return clientWithOptions;
