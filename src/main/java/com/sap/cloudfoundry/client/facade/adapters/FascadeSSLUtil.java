@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.net.Socket;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 
 import javax.net.ssl.*;
@@ -30,6 +31,7 @@ public class FascadeSSLUtil {
 
         @Override
         public void checkServerTrusted(X509Certificate[] chain, String authType) {
+            LOGGER.info("custom==checkServerTrusted");
         }
 
         @Override
@@ -38,6 +40,7 @@ public class FascadeSSLUtil {
 
         @Override
         public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket) {
+            LOGGER.info("custom==checkServerTrusted(X509Certificate[] chain, String authType, Socket socket)");
         }
 
         @Override
@@ -46,6 +49,7 @@ public class FascadeSSLUtil {
 
         @Override
         public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {
+            LOGGER.info("custom==checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine)");
         }
     };
 
@@ -54,10 +58,11 @@ public class FascadeSSLUtil {
         SSLContext sslContext;
         try {
             sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null, new TrustManager[] { NULL_TRUST_MANAGER }, null);
-            SSLContext.setDefault(sslContext);
+            sslContext.init(null, new TrustManager[] { NULL_TRUST_MANAGER }, new SecureRandom());
+            //SSLContext.setDefault(sslContext);
            // HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
         } catch (KeyManagementException | NoSuchAlgorithmException e) {
+            LOGGER.info("custom ==error occured from disableSSLValidation");
             throw new IllegalStateException(e);
         }
         LOGGER.info("==returning from disableSSLValidation");
