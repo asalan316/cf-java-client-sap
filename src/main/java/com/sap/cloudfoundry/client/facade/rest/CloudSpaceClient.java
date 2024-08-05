@@ -1,6 +1,7 @@
 package com.sap.cloudfoundry.client.facade.rest;
 
 import com.sap.cloudfoundry.client.facade.CloudOperationException;
+import com.sap.cloudfoundry.client.facade.adapters.CloudFoundryClientFactory;
 import com.sap.cloudfoundry.client.facade.adapters.RawCloudEntity;
 import com.sap.cloudfoundry.client.facade.domain.CloudSpace;
 import com.sap.cloudfoundry.client.facade.domain.ImmutableCloudOrganization;
@@ -17,6 +18,8 @@ import org.cloudfoundry.client.v3.spaces.GetSpaceRequest;
 import org.cloudfoundry.client.v3.spaces.ListSpacesRequest;
 import org.cloudfoundry.client.v3.spaces.Space;
 import org.cloudfoundry.client.v3.spaces.SpacesV3;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import reactor.util.retry.Retry;
 import reactor.util.retry.RetryBackoffSpec;
@@ -26,6 +29,8 @@ import java.util.List;
 import java.util.UUID;
 
 public class CloudSpaceClient {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CloudSpaceClient.class);
 
     private static final List<String> CHARS_TO_ENCODE = List.of(",");
     private static final long RETRIES = 3;
@@ -105,6 +110,8 @@ public class CloudSpaceClient {
     }
 
     private CloudSpace mapToCloudSpace(Space space, Organization org) {
+        LOGGER.info("Mapping space {} to CloudSpace", space);
+        LOGGER.info("Mapping Organization {} to CloudSpace", org);
         return ImmutableCloudSpace.builder()
                                   .metadata(RawCloudEntity.parseResourceMetadata(space))
                                   .name(space.getName())

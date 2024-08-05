@@ -137,6 +137,8 @@ public abstract class CloudFoundryClientFactory {
         LOGGER.info("custom-test: calling createV3SpacesClient");
         var spacesV3 = createV3SpacesClient(controllerUrl, v3Api, oAuthClient, requestTags);
         var orgsV3 = createV3OrgsClient(controllerUrl, v3Api, oAuthClient, requestTags);
+        LOGGER.info("custom-test=  passing space {} to CloudSpace", spacesV3);
+        LOGGER.info("custom-test = passing Organization {} to CloudSpace", orgsV3);
         return new CloudSpaceClient(spacesV3, orgsV3);
     }
 
