@@ -157,8 +157,8 @@ public abstract class CloudFoundryClientFactory {
     public ConnectionContext getOrCreateConnectionContext(String controllerApiHost) {
         LOGGER.info("custom-test: calling createConnectionContext");
         LOGGER.info("custom-test: checking connectionContextCache" + connectionContextCache);
-        return createConnectionContext(controllerApiHost); // create connection context everytime
-        //return connectionContextCache.computeIfAbsent(controllerApiHost, this::createConnectionContext);
+        //return createConnectionContext(controllerApiHost); // create connection context everytime
+        return connectionContextCache.computeIfAbsent(controllerApiHost, this::createConnectionContext);
     }
 
     private ConnectionContext createConnectionContext(String controllerApiHost) {
@@ -176,15 +176,15 @@ public abstract class CloudFoundryClientFactory {
         builder.secure(false);
         builder.skipSslValidation(true);
 
-        reactor.netty.http.client.HttpClient client = reactor.netty.http.client.HttpClient.create();
-        builder.httpClient(client.secure( ssl -> {
-            try {
-                ssl.sslContext(SslContextBuilder.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE).build());
-            } catch (SSLException e) {
-                LOGGER.info("custom-test: ssl.sslContext(SslContextBuilder.forClient(): " + e);
-                builder.httpClient(client.noSSL());
-            }
-        } ));
+        // reactor.netty.http.client.HttpClient client = reactor.netty.http.client.HttpClient.create();
+        // builder.httpClient(client.secure( ssl -> {
+        //     try {
+        //         ssl.sslContext(SslContextBuilder.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE).build());
+        //     } catch (SSLException e) {
+        //         LOGGER.info("custom-test: ssl.sslContext(SslContextBuilder.forClient(): " + e);
+        //         builder.httpClient(client.noSSL());
+        //     }
+        // } ));
 
         DefaultConnectionContext build = builder.build();
         LOGGER.info("finished custom-test: inside createConnectionContext: " + build);
@@ -204,7 +204,8 @@ public abstract class CloudFoundryClientFactory {
         Http11SslContextSpec http11SslContextSpec =
                 Http11SslContextSpec.forClient()
                         .configure(builder -> builder.trustManager(FascadeSSLUtil.NULL_TRUST_MANAGER));
-        clientWithOptions.secure(spec -> spec.sslContext(http11SslContextSpec));
+
+        clientWithOptions = clientWithOptions.secure(spec -> spec.sslContext(http11SslContextSpec));
 
         LOGGER.info("custom-test: after getAdditionalHttpClientConfiguration");
 
